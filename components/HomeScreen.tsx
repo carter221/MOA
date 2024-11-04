@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Button, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Button, Alert, FlatList } from 'react-native';
 import Statistics from './Statistics';
 import JournalEntry from './JournalEntry';
 
@@ -50,50 +50,38 @@ const HomeScreen = () => {
   };
 
   const today = new Date().toISOString().split('T')[0];
-  const hasTodayEntry = !!journal[today];
+
+  const data = [
+    { key: 'statistics', component: <Statistics entriesThisYear={entriesThisYear} numberOfWords={numberOfWords} daysJournaled={daysJournaled} /> },
+    { key: 'journalEntry', component: <JournalEntry entry={journal[today] || { title: '', date: today, text: '', emojiDay: '' }} onDelete={deleteTodayEntry} onSave={addJournalEntry} journalEntry={journalEntry} setJournalEntry={setJournalEntry} /> },
+  ];
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.titleRow}>
-        <TouchableOpacity
-          onPress={() => setShowDescription(!showDescription)}
-          style={styles.titleContainer}
-        >
-          <Text style={styles.title}>Journal</Text>
-        </TouchableOpacity>
-        {showDescription && (
-          <Text style={styles.description}>
-            Welcome to your journal!
-          </Text>
-        )}
-      </View>
-      <Statistics
-        entriesThisYear={entriesThisYear}
-        numberOfWords={numberOfWords}
-        daysJournaled={daysJournaled}
-      />
-      {hasTodayEntry ? (
-        <JournalEntry entry={journal[today]} onDelete={deleteTodayEntry} />
-      ) : (
-        <>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your journal entry"
-            value={journalEntry}
-            onChangeText={setJournalEntry}
-          />
-          <Button title="Add Journal Entry" onPress={addJournalEntry} />
-        </>
-      )}
-    </ScrollView>
+    <FlatList
+      data={data}
+      renderItem={({ item }) => item.component}
+      keyExtractor={(item) => item.key}
+      contentContainerStyle={styles.container}
+      ListHeaderComponent={
+        <View style={styles.titleRow}>
+          <TouchableOpacity
+            onPress={() => setShowDescription(!showDescription)}
+            style={styles.titleContainer}
+          >
+            <Text style={styles.title}>Journal</Text>
+          </TouchableOpacity>
+
+        </View>
+      }
+    />
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
     padding: 20,
     backgroundColor: '#ffff',
-    height: '100%',
   },
   titleRow: {
     flexDirection: 'row',
@@ -112,13 +100,6 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 16,
     textAlign: 'left',
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 10,
   },
 });
 
