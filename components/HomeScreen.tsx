@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Button, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
 import Statistics from './Statistics';
 import JournalEntry from './JournalEntry';
 
-const HomeScreen = () => {
+const HomeScreen = ({route}) => {
+  console.log(route.params?.id);
   const [showDescription, setShowDescription] = useState(false);
   const [entriesThisYear, setEntriesThisYear] = useState(0);
   const [numberOfWords, setNumberOfWords] = useState(0);
@@ -23,77 +24,48 @@ const HomeScreen = () => {
     setDaysJournaled(30);
   }, []);
 
-  const addJournalEntry = () => {
-    const today = new Date().toISOString().split('T')[0];
-    const emojis = ['🌳', '💼', '🌞', '🌜', '🌟', '🌈', '🔥', '💧', '🍀', '🌹'];
-    const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-
-    if (journal[today]) {
-      Alert.alert('Entry Exists', 'There is already an entry for today.');
-      return;
-    }
-
-    const newJournal = {
-      ...journal,
-      [today]: { title: 'New Entry', date: today, text: journalEntry, emojiDay: randomEmoji },
-    };
-
-    setJournal(newJournal);
-    setJournalEntry('');
-  };
-
-  const deleteTodayEntry = () => {
-    const today = new Date().toISOString().split('T')[0];
+  const deleteTodayEntry = ({}) => {
     const newJournal = { ...journal };
     delete newJournal[today];
     setJournal(newJournal);
   };
 
-  const today = new Date().toISOString().split('T')[0];
-  const hasTodayEntry = !!journal[today];
+  const today = route.params?.id || new Date().toISOString().split('T')[0];
+
+  const data = [
+    { key: 'statistics', component: <Statistics entriesThisYear={entriesThisYear} numberOfWords={numberOfWords} daysJournaled={daysJournaled} /> },
+    { key: 'journalEntry', component: <JournalEntry entry={journal[today] || { title: '', date: today, text: '', emojiDay: '' }} onDelete={deleteTodayEntry} journalEntry={journalEntry} setJournalEntry={setJournalEntry} /> },
+  ];
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.titleRow}>
-        <TouchableOpacity
-          onPress={() => setShowDescription(!showDescription)}
-          style={styles.titleContainer}
-        >
-          <Text style={styles.title}>Journal</Text>
-        </TouchableOpacity>
-        {showDescription && (
-          <Text style={styles.description}>
-            Welcome to your journal!
-          </Text>
-        )}
-      </View>
-      <Statistics
-        entriesThisYear={entriesThisYear}
-        numberOfWords={numberOfWords}
-        daysJournaled={daysJournaled}
-      />
-      {hasTodayEntry ? (
-        <JournalEntry entry={journal[today]} onDelete={deleteTodayEntry} />
-      ) : (
-        <>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your journal entry"
-            value={journalEntry}
-            onChangeText={setJournalEntry}
-          />
-          <Button title="Add Journal Entry" onPress={addJournalEntry} />
-        </>
-      )}
-    </ScrollView>
+    <FlatList
+      data={data}
+      renderItem={({ item }) => item.component}
+      keyExtractor={(item) => item.key}
+      contentContainerStyle={styles.container}
+      ListHeaderComponent={
+        <View style={styles.titleRow}>
+          <TouchableOpacity
+            onPress={() => setShowDescription(!showDescription)}
+            style={styles.titleContainer}
+          >
+            <Text style={styles.title}>Journal</Text>
+          </TouchableOpacity>
+          {showDescription && (
+            <Text style={styles.description}>
+              Welcome to your journal!
+            </Text>
+          )}
+        </View>
+      }
+    />
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor: '#ffff',
-    height: '100%',
+    backgroundColor:'#eeeee',
   },
   titleRow: {
     flexDirection: 'row',
@@ -112,13 +84,6 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 16,
     textAlign: 'left',
-  },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginBottom: 20,
-    paddingHorizontal: 10,
   },
 });
 

@@ -15,7 +15,8 @@ const App = () => {
       "id": 5,
       "date": "2024-11-23",
       "emojiDay": "👌",
-      "text": "coucou"
+      "text": "coucou",
+
     },
     "2024-11-24": {
       "id": 1,
@@ -35,6 +36,7 @@ const App = () => {
     <NavigationContainer>
       <Tab.Navigator
         screenOptions={({ route }) => ({
+          headerShown: false,
           tabBarIcon: ({ color, size }) => {
             let iconName;
 
