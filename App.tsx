@@ -1,36 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import HomeScreen from './components/HomeScreen';
 import CalendarComponent from './components/CalendarComponent';
+import JournalScreen from './components/JournalSceen';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
 
 const App = () => {
   const [journals, setJournals] = useState({});
 
-  const journal = {
-    "2024-11-23": {
-      "id": 5,
-      "date": "2024-11-23",
-      "emojiDay": "👌",
-      "text": "coucou",
+  useEffect(() => {
+    const loadJournals = async () => {
+      try {
+        const storedJournals = await AsyncStorage.getItem('journals');
+        if (storedJournals) {
+          setJournals(JSON.parse(storedJournals));
+        }
+      } catch (error) {
+        console.error('Failed to load journals', error);
+      }
+    };
 
-    },
-    "2024-11-24": {
-      "id": 1,
-      "date": "2024-11-24",
-      "emojiDay": "❤",
-      "text": "tst1"
-    },
-    "2024-10-23": {
-      "id": 5,
-      "date": "2024-10-23",
-      "emojiDay": "😁",
-      "text": "test2"
+    loadJournals();
+  }, []);
+
+  const saveJournals = async (newJournals) => {
+    try {
+      await AsyncStorage.setItem('journals', JSON.stringify(newJournals));
+      setJournals(newJournals);
+    } catch (error) {
+      console.error('Failed to save journals', error);
     }
-  }
+  };
+
+  const CalendarStack = () => (
+    <Stack.Navigator>
+      <Stack.Screen name="Calendar">
+        {() => <CalendarComponent date={new Date()} journal={journals} />}
+      </Stack.Screen>
+      <Stack.Screen name="JournalScreen" component={JournalScreen} />
+    </Stack.Navigator>
+  );
 
   return (
     <NavigationContainer>
@@ -50,10 +65,10 @@ const App = () => {
           },
         })}
       >
-        <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Calendar">
-          {() => <CalendarComponent date={new Date()} journal={journal} />}
+        <Tab.Screen name="Home">
+          {() => <HomeScreen journals={journals} saveJournals={saveJournals} />}
         </Tab.Screen>
+        <Tab.Screen name="Calendar" component={CalendarStack} />
       </Tab.Navigator>
     </NavigationContainer>
   );

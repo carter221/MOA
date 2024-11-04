@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { CalendarList } from 'react-native-calendars';
-import MonthYearPicker from 'react-native-month-year-picker';
+import { useNavigation } from '@react-navigation/native';
 
 const CalendarComponent = ({ date, journal }) => {
-  const [isShow, setIsShow] = useState(false);
+  const navigation = useNavigation();
 
   return (
     <View>
-
       <CalendarList
         pastScrollRange={50}
         futureScrollRange={0}
@@ -18,7 +17,7 @@ const CalendarComponent = ({ date, journal }) => {
         dayComponent={({ date }) => {
           let journalDay = journal[date?.dateString];
           return (
-            <TouchableOpacity onPress={() => Alert.alert("Événement", journalDay ? journalDay.text : "Aucun événement")}>
+            <TouchableOpacity onPress={() => navigation.navigate("JournalScreen", { date: date?.dateString })}>
               <Text>{date?.day}</Text>
               <Text>{journalDay ? journalDay.emojiDay : "..."}</Text>
             </TouchableOpacity>

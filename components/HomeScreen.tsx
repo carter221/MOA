@@ -2,19 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
 import Statistics from './Statistics';
 import JournalEntry from './JournalEntry';
+import { useRoute } from '@react-navigation/native';
 
-const HomeScreen = ({route}) => {
-  console.log(route.params?.id);
+const HomeScreen = ({ journals, saveJournals }) => {
+  const route = useRoute();
   const [showDescription, setShowDescription] = useState(false);
   const [entriesThisYear, setEntriesThisYear] = useState(0);
   const [numberOfWords, setNumberOfWords] = useState(0);
   const [daysJournaled, setDaysJournaled] = useState(0);
   const [journalEntry, setJournalEntry] = useState('');
 
-  const [journal, setJournal] = useState({
-    '2023-10-01': { title: 'Park Visit', date: '2023-10-01', text: 'Went to the park', emojiDay: '🌳' },
-    '2023-10-02': { title: 'Work Day', date: '2023-10-02', text: 'Had a great day at work', emojiDay: '💼' },
-  });
+  const [journal, setJournal] = useState(journals);
 
   useEffect(() => {
     // Fetch or calculate the statistics here
@@ -24,13 +22,15 @@ const HomeScreen = ({route}) => {
     setDaysJournaled(30);
   }, []);
 
-  const deleteTodayEntry = ({}) => {
+  const deleteTodayEntry = () => {
+    const today = route.params?.date || new Date().toISOString().split('T')[0];
     const newJournal = { ...journal };
     delete newJournal[today];
     setJournal(newJournal);
+    saveJournals(newJournal);
   };
 
-  const today = route.params?.id || new Date().toISOString().split('T')[0];
+  const today = route.params?.date || new Date().toISOString().split('T')[0];
 
   const data = [
     { key: 'statistics', component: <Statistics entriesThisYear={entriesThisYear} numberOfWords={numberOfWords} daysJournaled={daysJournaled} /> },
@@ -65,7 +65,7 @@ const HomeScreen = ({route}) => {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    backgroundColor:'#eeeee',
+    backgroundColor: '#eeeee',
   },
   titleRow: {
     flexDirection: 'row',
