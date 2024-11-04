@@ -6,6 +6,8 @@ import MonthYearPicker from 'react-native-simple-month-year-picker';
 import { useCallback, useState } from 'react';
 import MonthPicker from 'react-native-month-year-picker';
 import ScrollView = Animated.ScrollView;
+import HomeScreen from './components/HomeScreen';
+import * as SplashScreen from 'expo-splash-screen';
 
 LocaleConfig.locales['fr'] = {
   monthNames: [
@@ -44,12 +46,33 @@ const journal = {
 };
 
 export default function App() {
+    
+  useEffect(() => {
+    async function prepare() {
+      try {
+        // Keep the splash screen visible while we fetch resources
+        await SplashScreen.preventAutoHideAsync();
+        // Pre-load any resources or data that you need prior to rendering the app
+        // Artificially delay for two seconds to simulate a slow loading experience
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        // Tell the application to render
+        await SplashScreen.hideAsync();
+      }
+    }
+
+    prepare();
+  }, []);
+
   const [date, setDate] = useState(new Date());
   const [isShow, setIsShow ] = useState(false)
 
 
   return (
     <View style={styles.container}>
+      <HomeScreen />
       <Text style={styles.title}>Sélecteur Mois et Année</Text>
 
       <TouchableOpacity onPress={() => setIsShow(true)} style={styles.button}>
@@ -91,10 +114,11 @@ const styles = StyleSheet.create({
     marginTop: 100,
     marginBottom: 100,
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#000',
     alignItems: 'center',
     justifyContent: 'center',
   },
+
   title: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -111,3 +135,4 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
