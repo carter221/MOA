@@ -1,14 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { CalendarList } from 'react-native-calendars';
-import MonthYearPicker from 'react-native-month-year-picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const CalendarComponent = ({ date, journal }) => {
-  const [isShow, setIsShow] = useState(false);
+const CalendarComponent = ({ date }) => {
+  const [journal, setJournal] = useState({});
+
+  useEffect(() => {
+    const fetchJournalEntry = async () => {
+      try {
+        const storedJournalEntry = await AsyncStorage.getItem('journalEntry');
+        if (storedJournalEntry) {
+          setJournal(JSON.parse(storedJournalEntry));
+        }
+      } catch (error) {
+        console.error('Failed to fetch the journal entry', error);
+      }
+    };
+
+    fetchJournalEntry();
+  }, []);
 
   return (
     <View>
-
       <CalendarList
         pastScrollRange={50}
         futureScrollRange={0}
@@ -20,7 +34,7 @@ const CalendarComponent = ({ date, journal }) => {
           return (
             <TouchableOpacity onPress={() => Alert.alert("Événement", journalDay ? journalDay.text : "Aucun événement")}>
               <Text>{date?.day}</Text>
-              <Text>{journalDay ? journalDay.emojiDay : "..."}</Text>
+              <Text>{journalDay ? journalDay.emoji : "..."}</Text>
             </TouchableOpacity>
           );
         }}
